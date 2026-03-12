@@ -1,0 +1,112 @@
+test_channel:
+  fields:
+    entry_id:
+      required: false
+      example: "f6d7f0b6a4ec1f7f6be17c3eab123456"
+      selector:
+        text:
+    channel:
+      required: true
+      example: 1
+      selector:
+        number:
+          min: 1
+          max: 512
+          mode: box
+          step: 1
+    value:
+      required: true
+      example: 255
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: box
+          step: 1
+test_mapping:
+  fields:
+    entry_id:
+      required: false
+      example: "f6d7f0b6a4ec1f7f6be17c3eab123456"
+      selector:
+        text:
+    mapping_entity:
+      required: true
+      example: "light.salon"
+      selector:
+        entity:
+          domain:
+            - light
+            - switch
+    value:
+      required: false
+      example: 180
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: box
+          step: 1
+    red:
+      required: false
+      example: 255
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: box
+          step: 1
+    green:
+      required: false
+      example: 120
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: box
+          step: 1
+    blue:
+      required: false
+      example: 0
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: box
+          step: 1
+    white:
+      required: false
+      example: 255
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: box
+          step: 1
+    cold_white:
+      required: false
+      example: 180
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: box
+          step: 1
+    warm_white:
+      required: false
+      example: 220
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: box
+          step: 1
+    color_temp:
+      required: false
+      example: 180
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: box
+          step: 1

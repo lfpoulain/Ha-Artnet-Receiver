@@ -1,0 +1,114 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure ArtNet Receiver",
+        "description": "Set the Art-Net listener address, UDP port and DMX universe.",
+        "data": {
+          "name": "Name",
+          "host": "Listen address",
+          "port": "UDP port",
+          "universe": "Art-Net universe",
+          "polling_mode": "Update rate"
+        }
+      },
+      "mapping": {
+        "title": "Add a DMX mapping",
+        "description": "Choose a Home Assistant entity and assign its DMX channel mapping.",
+        "data": {
+          "entity_id": "Entity",
+          "profile": "Mapping type",
+          "channel": "Primary dimmer channel",
+          "red_channel": "Red channel",
+          "green_channel": "Green channel",
+          "blue_channel": "Blue channel",
+          "white_channel": "White channel",
+          "cold_white_channel": "Cold white channel",
+          "warm_white_channel": "Warm white channel",
+          "color_temp_channel": "Color temperature channel",
+          "add_another": "Add another entity after this one"
+        }
+      }
+    },
+    "error": {
+      "channel_conflict": "At least one DMX channel is already assigned.",
+      "channel_out_of_range": "DMX channels must be between 1 and 512.",
+      "entity_already_added": "This entity is already mapped.",
+      "entity_not_found": "The selected entity is not available right now.",
+      "entity_not_supported": "Only light and switch entities are supported.",
+      "invalid_profile": "This mapping type is not compatible with the selected entity."
+    },
+    "abort": {
+      "already_configured": "An ArtNet Receiver already exists for this address and port."
+    }
+  },
+  "options": {
+    "step": {
+      "network": {
+        "title": "Edit Art-Net listener",
+        "description": "Update the listener address, UDP port and universe.",
+        "data": {
+          "name": "Name",
+          "host": "Listen address",
+          "port": "UDP port",
+          "universe": "Art-Net universe",
+          "polling_mode": "Update rate"
+        }
+      },
+      "add_mapping": {
+        "title": "Add a DMX mapping",
+        "description": "Add a new Home Assistant entity to the DMX patch.",
+        "data": {
+          "entity_id": "Entity",
+          "profile": "Mapping type",
+          "channel": "Primary / dimmer channel",
+          "red_channel": "Red channel",
+          "green_channel": "Green channel",
+          "blue_channel": "Blue channel",
+          "white_channel": "White channel",
+          "cold_white_channel": "Cold white channel",
+          "warm_white_channel": "Warm white channel",
+          "color_temp_channel": "Color temperature channel",
+          "add_another": "Add another entity after this one"
+        }
+      },
+      "edit_mapping_select": {
+        "title": "Choose a mapping to edit",
+        "data": {
+          "mapping_entity": "Mapped entity"
+        }
+      },
+      "edit_mapping": {
+        "title": "Edit DMX mapping",
+        "description": "Change the entity profile or DMX channels.",
+        "data": {
+          "entity_id": "Entity",
+          "profile": "Mapping type",
+          "channel": "Primary / dimmer channel",
+          "red_channel": "Red channel",
+          "green_channel": "Green channel",
+          "blue_channel": "Blue channel",
+          "white_channel": "White channel",
+          "cold_white_channel": "Cold white channel",
+          "warm_white_channel": "Warm white channel",
+          "color_temp_channel": "Color temperature channel"
+        }
+      },
+      "remove_mapping": {
+        "title": "Remove a mapping",
+        "data": {
+          "mapping_entity": "Mapped entity"
+        }
+      }
+    },
+    "error": {
+      "channel_conflict": "At least one DMX channel is already assigned.",
+      "channel_out_of_range": "DMX channels must be between 1 and 512.",
+      "entity_already_added": "This entity is already mapped.",
+      "entity_not_found": "The selected entity is not available right now.",
+      "entity_not_supported": "Only light and switch entities are supported.",
+      "invalid_profile": "This mapping type is not compatible with the selected entity.",
+      "already_configured": "Another ArtNet Receiver entry already uses this address and port."
+    }
+  }
+}
