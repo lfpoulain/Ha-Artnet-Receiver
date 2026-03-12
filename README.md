@@ -2,110 +2,109 @@
 
 ArtNet Receiver is a Home Assistant custom integration that listens to **Art-Net / DMX** frames over UDP and maps DMX channels to Home Assistant `light` and `switch` entities.
 
-It is designed for practical Art-Net to Home Assistant control with:
+It is built for practical Art-Net to Home Assistant workflows where you want reliable control, clear diagnostics, and better behavior during fades without flooding Home Assistant with outdated commands.
 
-- dynamic mapping configuration
-- multiple light profiles
-- diagnostics sensors
-- test services
-- configurable update rate to reduce service flooding during fades
+## Why use ArtNet Receiver
 
-## Features
+- **Local Art-Net listener** with configurable host, port, and universe
+- **UI-based configuration** with config flow and options flow
+- **Flexible DMX mapping** for lights and switches
+- **Multiple profiles** for common lighting setups
+- **Diagnostics sensors** to understand runtime behavior
+- **Test services** for quick validation without an external sender
+- **Configurable update rate** to reduce flooding during fades
+- **Latest-value behavior** to stay as close as possible to the most recent DMX command
 
-- Listen to **Art-Net** on a configurable host, port and universe
-- Map DMX channels to Home Assistant entities
-- Supported target domains:
-  - `light`
-  - `switch`
-- Supported profiles:
-  - `switch`
-  - `dimmer`
-  - `rgb`
-  - `rgbw`
-  - `rgbww`
-  - `color_temp`
-- Config flow and options flow in Home Assistant UI
-- Mapping diagnostics exposed in sensors and diagnostics export
-- Test services for channels and mappings
-- Configurable output cadence:
-  - `Fast` = 50 ms
-  - `Normal` = 100 ms
-  - `Low` = 200 ms
+## Supported entities
+
+- **`light`**
+- **`switch`**
+
+## Supported profiles
+
+- **`switch`**
+- **`dimmer`**
+- **`rgb`**
+- **`rgbw`**
+- **`rgbww`**
+- **`color_temp`**
 
 ## Installation
 
-### HACS custom repository
+### Option 1: HACS
 
 1. Open **HACS** in Home Assistant.
 2. Go to the custom repositories section.
 3. Add this repository URL.
 4. Select category **Integration**.
 5. Search for **ArtNet Receiver**.
-6. Install it.
+6. Install the integration.
 7. Restart Home Assistant.
+8. Add **ArtNet Receiver** from **Settings -> Devices & Services**.
 
-### Manual installation
+### Option 2: Manual installation
 
 1. Copy `custom_components/artnet_receiver` into your Home Assistant `custom_components` directory.
 2. Restart Home Assistant.
-3. Add **ArtNet Receiver** from the integrations UI.
+3. Add **ArtNet Receiver** from **Settings -> Devices & Services**.
 
-Expected final path:
+Expected path:
 
 ```text
 config/custom_components/artnet_receiver/
 ```
 
-## Configuration
+## Quick overview
 
-After installation, add the integration from **Settings -> Devices & Services -> Add Integration**.
-
-### Network settings
+After installation, create the integration from the Home Assistant UI and configure:
 
 - **Name**
 - **Listen address**
 - **UDP port**
 - **Art-Net universe**
 - **Update rate**
-  - `Fast (50 ms)`
-  - `Normal (100 ms)`
-  - `Low (200 ms)`
 
-### Mapping profiles
+Available update rates:
 
-#### Switch
+- **`Fast`** = `50 ms`
+- **`Normal`** = `100 ms`
+- **`Low`** = `200 ms`
 
-- 1 DMX channel
-- Suitable for switches, plugs, relays, or simple on/off behavior
+## Mapping profiles
 
-#### Dimmer
+### Switch
 
-- 1 DMX channel
-- Maps DMX value to Home Assistant brightness
+- **1 DMX channel**
+- Best for relays, smart plugs, or simple on/off behavior
 
-#### RGB
+### Dimmer
 
-- 4 DMX channels
-- Layout:
+- **1 DMX channel**
+- Maps the DMX value to Home Assistant brightness
+
+### RGB
+
+- **4 DMX channels**
+- Channel layout:
   - dimmer
   - red
   - green
   - blue
 
-#### RGBW
+### RGBW
 
-- 5 DMX channels
-- Layout:
+- **5 DMX channels**
+- Channel layout:
   - dimmer
   - red
   - green
   - blue
   - white
 
-#### RGBWW
+### RGBWW
 
-- 6 DMX channels
-- Layout:
+- **6 DMX channels**
+- Channel layout:
   - dimmer
   - red
   - green
@@ -113,31 +112,40 @@ After installation, add the integration from **Settings -> Devices & Services ->
   - cold white
   - warm white
 
-#### Color temperature
+### Color temperature
 
-- 2 DMX channels
-- Layout:
+- **2 DMX channels**
+- Channel layout:
   - dimmer
   - color temperature
 
-## How it works
+## Fade behavior and update strategy
 
-- The integration listens for Art-Net DMX frames on UDP.
-- Incoming values are matched against configured mappings.
-- For each mapped entity, the integration stores the latest received value.
-- Instead of forwarding every DMX frame immediately, it applies the latest value at the configured cadence.
-- This avoids excessive Home Assistant service calls during fades.
+ArtNet Receiver is designed to avoid the classic Home Assistant catch-up effect where a light keeps replaying older commands after a fast DMX fade.
+
+Current behavior is focused on:
+
+- **keeping the latest value**
+- **limiting update frequency**
+- **reducing service flooding**
+- **staying closer to the final requested state**
+
+This is especially useful for:
+
+- dimmer fades
+- color temperature fades
+- frequent DMX changes from live control
 
 ## Diagnostics
 
-The integration exposes diagnostic sensors, including:
+The integration exposes dedicated diagnostic sensors:
 
 - **Activity**
 - **Packets received**
 - **Service calls sent**
 - **Mappings**
 
-Runtime diagnostics include useful attributes such as:
+Runtime diagnostics expose useful attributes such as:
 
 - configured bind host
 - effective bind host
@@ -145,28 +153,30 @@ Runtime diagnostics include useful attributes such as:
 - universe
 - polling mode
 - service call interval in milliseconds
+- active service workers
 - queued service calls
 - last service call
 - configured mappings
 - last error
+- last packet metadata
 
 The dedicated **Mappings** sensor also exposes:
 
 - a readable summary
-- structured mappings data
-- JSON mappings export in attributes
+- structured mapping data
+- JSON export in attributes
 
 ## Services
 
 ### `artnet_receiver.test_channel`
 
-Inject a DMX value into a single channel.
+Inject a DMX value into a single channel for quick testing.
 
 Fields:
 
-- `entry_id` optional
-- `channel`
-- `value`
+- **`entry_id`** optional
+- **`channel`**
+- **`value`**
 
 ### `artnet_receiver.test_mapping`
 
@@ -174,31 +184,36 @@ Trigger a configured mapped entity without an external Art-Net sender.
 
 Fields:
 
-- `entry_id` optional
-- `mapping_entity`
-- `value`
-- `red`
-- `green`
-- `blue`
-- `white`
-- `cold_white`
-- `warm_white`
-- `color_temp`
+- **`entry_id`** optional
+- **`mapping_entity`**
+- **`value`**
+- **`red`**
+- **`green`**
+- **`blue`**
+- **`white`**
+- **`cold_white`**
+- **`warm_white`**
+- **`color_temp`**
 
-## Notes about compatibility
+## Compatibility notes
 
-- This integration currently uses the Home Assistant domain:
+Current Home Assistant domain:
 
 ```text
 artnet_receiver
 ```
 
-- If you used an older local version based on the previous `dmaix` domain, that is a **breaking change**.
-- Existing config entries and service names from the old domain may need to be recreated.
+If you used an older local version based on the previous `dmaix` domain, this is a **breaking change**.
 
-## HACS repository layout
+You may need to:
 
-This repository is structured for HACS as a custom integration repository:
+- recreate the integration entry
+- update service calls
+- recreate old references based on the former domain
+
+## Repository structure
+
+This repository is already structured as a HACS custom integration repository:
 
 ```text
 custom_components/
@@ -207,43 +222,50 @@ README.md
 hacs.json
 ```
 
-## Recommended repository strategy
+## Recommended publication workflow
 
-For HACS, a **dedicated repository for this integration** is the best option.
+For HACS, the recommended approach is:
 
-Recommended:
+- **one repository**
+- **one integration**
+- **one `custom_components/artnet_receiver` package**
 
-- one repository
-- one integration
-- one `custom_components/artnet_receiver` package
+This keeps installation, releases, maintenance, and support much cleaner.
 
-Why:
+## Before publishing
 
-- cleaner HACS installation
-- easier versioning and releases
-- clearer issues and changelog
-- simpler maintenance
+Recommended finishing steps:
 
-So yes: **a separate repository dedicated to this custom component is better**.
+- add a **LICENSE** file
+- create a first **GitHub release/tag** matching the integration version
+- test installation from **HACS custom repository**
+- add screenshots or a short GIF in the README
+- optionally add CI validation
 
-## Suggested next steps before publishing
+## Version
 
-- add a license file
-- add screenshots or GIFs in the README
-- create a first GitHub release tag matching the integration version
-- test installation from HACS custom repository
-- optionally add CI for validation
+Current manifest version:
 
-## Development status
+- **`0.2.0`**
 
-Current version from manifest:
+## Known practical limitations
 
-- `0.2.0`
+As with any Home Assistant light control pipeline, final behavior also depends on the target device and its native latency.
 
-## Support
+Typical limits can come from:
 
-If you publish this on GitHub, it is worth documenting:
+- Wi-Fi device latency
+- cloud-based light integrations
+- slow firmware reactions
+- lights that internally smooth or delay state changes
 
-- supported Home Assistant versions
-- supported Art-Net senders tested
-- known limitations for slow cloud/Wi-Fi lights
+For best results, local lights and locally controlled integrations usually perform better than cloud-based devices.
+
+## Support and feedback
+
+If you publish this repository publicly, it is useful to document:
+
+- tested Home Assistant versions
+- tested Art-Net senders
+- tested device types
+- known limitations by light platform
