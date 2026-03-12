@@ -195,52 +195,15 @@ Fields:
 - **`warm_white`**
 - **`color_temp`**
 
-## Compatibility notes
+## Project status
 
-Current Home Assistant domain:
+ArtNet Receiver is structured and maintained as a production-ready Home Assistant custom integration for HACS.
 
-```text
-artnet_receiver
-```
+Repository layout:
 
-If you used an older local version based on the previous `dmaix` domain, this is a **breaking change**.
-
-You may need to:
-
-- recreate the integration entry
-- update service calls
-- recreate old references based on the former domain
-
-## Repository structure
-
-This repository is already structured as a HACS custom integration repository:
-
-```text
-custom_components/
-  artnet_receiver/
-README.md
-hacs.json
-```
-
-## Recommended publication workflow
-
-For HACS, the recommended approach is:
-
-- **one repository**
-- **one integration**
-- **one `custom_components/artnet_receiver` package**
-
-This keeps installation, releases, maintenance, and support much cleaner.
-
-## Before publishing
-
-Recommended finishing steps:
-
-- add a **LICENSE** file
-- create a first **GitHub release/tag** matching the integration version
-- test installation from **HACS custom repository**
-- add screenshots or a short GIF in the README
-- optionally add CI validation
+- `custom_components/artnet_receiver`
+- `README.md`
+- `hacs.json`
 
 ## Version
 
@@ -248,9 +211,14 @@ Current manifest version:
 
 - **`0.2.0`**
 
-## Known practical limitations
+## Operational notes
 
-As with any Home Assistant light control pipeline, final behavior also depends on the target device and its native latency.
+For production use, it is recommended to keep track of:
+
+- tested Home Assistant versions
+- tested Art-Net senders
+- tested device types
+- known limitations by light platform
 
 Typical limits can come from:
 
@@ -260,12 +228,3 @@ Typical limits can come from:
 - lights that internally smooth or delay state changes
 
 For best results, local lights and locally controlled integrations usually perform better than cloud-based devices.
-
-## Support and feedback
-
-If you publish this repository publicly, it is useful to document:
-
-- tested Home Assistant versions
-- tested Art-Net senders
-- tested device types
-- known limitations by light platform
