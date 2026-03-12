@@ -1,0 +1,26 @@
+{
+  "entity": {
+    "sensor": {
+      "activity": {
+        "default": "mdi:lan-connect",
+        "state": {
+          "active": "mdi:lan-connect",
+          "idle": "mdi:lan-disconnect"
+        }
+      },
+      "packets_received": {
+        "default": "mdi:counter"
+      },
+      "service_calls_sent": {
+        "default": "mdi:transit-connection-variant"
+      },
+      "mappings": {
+        "default": "mdi:source-branch"
+      }
+    }
+  },
+  "services": {
+    "test_channel": "mdi:tune-vertical",
+    "test_mapping": "mdi:play-circle-outline"
+  }
+}

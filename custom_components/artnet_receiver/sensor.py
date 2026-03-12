@@ -59,11 +59,11 @@ class DmaixBaseSensor(SensorEntity):
 
 
 class DmaixActivitySensor(DmaixBaseSensor):
+    _attr_translation_key = "activity"
+
     def __init__(self, entry: ConfigEntry, receiver) -> None:
         super().__init__(entry, receiver)
         self._attr_unique_id = f"{entry.entry_id}_activity"
-        self._attr_name = "Activity"
-        self._attr_icon = "mdi:lan-connect"
 
     @property
     def native_value(self) -> str:
@@ -78,11 +78,11 @@ class DmaixPacketsSensor(DmaixBaseSensor):
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
     _attr_native_unit_of_measurement = "packets"
 
+    _attr_translation_key = "packets_received"
+
     def __init__(self, entry: ConfigEntry, receiver) -> None:
         super().__init__(entry, receiver)
         self._attr_unique_id = f"{entry.entry_id}_packets_received"
-        self._attr_name = "Packets received"
-        self._attr_icon = "mdi:counter"
 
     @property
     def native_value(self) -> int:
@@ -93,11 +93,11 @@ class DmaixServiceCallsSensor(DmaixBaseSensor):
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
     _attr_native_unit_of_measurement = "calls"
 
+    _attr_translation_key = "service_calls_sent"
+
     def __init__(self, entry: ConfigEntry, receiver) -> None:
         super().__init__(entry, receiver)
         self._attr_unique_id = f"{entry.entry_id}_service_calls_sent"
-        self._attr_name = "Service calls sent"
-        self._attr_icon = "mdi:transit-connection-variant"
 
     @property
     def native_value(self) -> int:
@@ -105,11 +105,11 @@ class DmaixServiceCallsSensor(DmaixBaseSensor):
 
 
 class DmaixMappingsSensor(DmaixBaseSensor):
+    _attr_translation_key = "mappings"
+
     def __init__(self, entry: ConfigEntry, receiver) -> None:
         super().__init__(entry, receiver)
         self._attr_unique_id = f"{entry.entry_id}_mappings"
-        self._attr_name = "Mappings"
-        self._attr_icon = "mdi:source-branch"
 
     @property
     def native_value(self) -> str:
