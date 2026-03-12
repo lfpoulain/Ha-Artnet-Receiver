@@ -1,4 +1,24 @@
 {
+  "entity": {
+    "sensor": {
+      "activity": {
+        "name": "Activity",
+        "state": {
+          "active": "Active",
+          "idle": "Idle"
+        }
+      },
+      "packets_received": {
+        "name": "Packets received"
+      },
+      "service_calls_sent": {
+        "name": "Service calls sent"
+      },
+      "mappings": {
+        "name": "Mappings"
+      }
+    }
+  },
   "config": {
     "step": {
       "user": {
