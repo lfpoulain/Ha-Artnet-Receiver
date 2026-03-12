@@ -20,7 +20,11 @@
     }
   },
   "services": {
-    "test_channel": "mdi:tune-vertical",
-    "test_mapping": "mdi:play-circle-outline"
+    "test_channel": {
+      "service": "mdi:tune-vertical"
+    },
+    "test_mapping": {
+      "service": "mdi:play-circle-outline"
+    }
   }
 }

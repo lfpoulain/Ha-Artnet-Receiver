@@ -2,7 +2,11 @@
   "entity": {
     "sensor": {
       "activity": {
-        "name": "Activity"
+        "name": "Activity",
+        "state": {
+          "active": "Active",
+          "idle": "Idle"
+        }
       },
       "packets_received": {
         "name": "Packets received"
