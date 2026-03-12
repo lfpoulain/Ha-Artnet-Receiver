@@ -41,6 +41,7 @@ from .const import (
     PROFILE_COLOR_TEMP,
     PROFILE_DIMMER,
     PROFILE_RGB,
+    PROFILE_RGB_COLOR_TEMP,
     PROFILE_RGBW,
     PROFILE_RGBWW,
     PROFILE_SWITCH,
@@ -51,6 +52,7 @@ from .helpers import (
     build_unique_id,
     config_from_entry,
     mapping_label,
+    preferred_profile_for_entity,
     suggest_next_channel,
     validate_mapping,
 )
@@ -106,6 +108,7 @@ class BaseDmaixFlow:
             {"value": PROFILE_SWITCH, "label": "Switch / prise / relais"},
             {"value": PROFILE_DIMMER, "label": "Dimmer"},
             {"value": PROFILE_RGB, "label": "RGB (4 canaux)"},
+            {"value": PROFILE_RGB_COLOR_TEMP, "label": "RGB + température de couleur (5 canaux)"},
             {"value": PROFILE_RGBW, "label": "RGBW (5 canaux)"},
             {"value": PROFILE_RGBWW, "label": "RGBWW (6 canaux)"},
             {"value": PROFILE_COLOR_TEMP, "label": "Color temperature (2 canaux)"},
@@ -129,17 +132,14 @@ class BaseDmaixFlow:
                     }
                 }
             ),
-            vol.Required(CONF_PROFILE, default=defaults.get(CONF_PROFILE, PROFILE_SWITCH)): selector(
-                {
-                    "select": {
-                        "options": self._profile_options(),
-                        "mode": "dropdown",
-                    }
-                }
-            ),
         }
         if include_add_another:
-            schema[vol.Required(CONF_ADD_ANOTHER, default=bool(defaults.get(CONF_ADD_ANOTHER, False)))] = bool
+            schema[
+                vol.Required(
+                    CONF_ADD_ANOTHER,
+                    default=bool(defaults.get(CONF_ADD_ANOTHER, False)),
+                )
+            ] = bool
         return vol.Schema(schema)
 
     def _mapping_channels_schema(
@@ -156,6 +156,7 @@ class BaseDmaixFlow:
             PROFILE_SWITCH,
             PROFILE_DIMMER,
             PROFILE_RGB,
+            PROFILE_RGB_COLOR_TEMP,
             PROFILE_RGBW,
             PROFILE_RGBWW,
             PROFILE_COLOR_TEMP,
@@ -171,7 +172,7 @@ class BaseDmaixFlow:
                 }
             )
 
-        if profile in {PROFILE_RGB, PROFILE_RGBW, PROFILE_RGBWW}:
+        if profile in {PROFILE_RGB, PROFILE_RGB_COLOR_TEMP, PROFILE_RGBW, PROFILE_RGBWW}:
             schema[vol.Required(CONF_RED_CHANNEL, default=int(defaults.get(CONF_RED_CHANNEL, min(next_channel + 1, DMX_CHANNEL_MAX))))] = selector(
                 {
                     "number": {
@@ -237,8 +238,16 @@ class BaseDmaixFlow:
                 }
             )
 
-        if profile == PROFILE_COLOR_TEMP:
-            schema[vol.Required(CONF_COLOR_TEMP_CHANNEL, default=int(defaults.get(CONF_COLOR_TEMP_CHANNEL, min(next_channel + 1, DMX_CHANNEL_MAX))))] = selector(
+        if profile in {PROFILE_COLOR_TEMP, PROFILE_RGB_COLOR_TEMP}:
+            schema[vol.Required(
+                CONF_COLOR_TEMP_CHANNEL,
+                default=int(
+                    defaults.get(
+                        CONF_COLOR_TEMP_CHANNEL,
+                        min(next_channel + (4 if profile == PROFILE_RGB_COLOR_TEMP else 1), DMX_CHANNEL_MAX),
+                    )
+                ),
+            )] = selector(
                 {
                     "number": {
                         "min": DMX_CHANNEL_MIN,
@@ -295,14 +304,18 @@ class BaseDmaixFlow:
                 return True
         return False
 
-    @staticmethod
     def _stage_mapping_target(
+        self,
         user_input: dict[str, Any],
         include_add_another: bool,
-    ) -> dict[str, Any]:
+    ) -> dict[str, Any] | None:
+        entity_id = str(user_input[CONF_ENTITY_ID])
+        profile = preferred_profile_for_entity(self.hass, entity_id)
+        if profile is None:
+            return None
         staged = {
-            CONF_ENTITY_ID: str(user_input[CONF_ENTITY_ID]),
-            CONF_PROFILE: str(user_input[CONF_PROFILE]),
+            CONF_ENTITY_ID: entity_id,
+            CONF_PROFILE: profile,
         }
         if include_add_another:
             staged[CONF_ADD_ANOTHER] = bool(user_input.get(CONF_ADD_ANOTHER, False))
@@ -353,6 +366,13 @@ class DmaixConfigFlow(BaseDmaixFlow, config_entries.ConfigFlow, domain=DOMAIN):
                     user_input,
                     include_add_another=True,
                 )
+                if self._pending_mapping is None:
+                    errors["base"] = "invalid_profile"
+                    return self.async_show_form(
+                        step_id="mapping",
+                        data_schema=self._mapping_target_schema(include_add_another=True),
+                        errors=errors,
+                    )
                 return self.async_show_form(
                     step_id="mapping",
                     data_schema=self._mapping_channels_schema(
@@ -451,6 +471,16 @@ class DmaixOptionsFlow(BaseDmaixFlow, config_entries.OptionsFlow):
                     user_input,
                     include_add_another=True,
                 )
+                if self._pending_mapping is None:
+                    errors["base"] = "invalid_profile"
+                    return self.async_show_form(
+                        step_id="add_mapping",
+                        data_schema=self._mapping_target_schema(
+                            defaults={CONF_ADD_ANOTHER: False},
+                            include_add_another=True,
+                        ),
+                        errors=errors,
+                    )
                 return self.async_show_form(
                     step_id="add_mapping",
                     data_schema=self._mapping_channels_schema(
@@ -529,6 +559,16 @@ class DmaixOptionsFlow(BaseDmaixFlow, config_entries.OptionsFlow):
                     user_input,
                     include_add_another=False,
                 )
+                if self._pending_mapping is None:
+                    errors["base"] = "invalid_profile"
+                    return self.async_show_form(
+                        step_id="edit_mapping",
+                        data_schema=self._mapping_target_schema(
+                            defaults=mapping,
+                            include_add_another=False,
+                        ),
+                        errors=errors,
+                    )
                 return self.async_show_form(
                     step_id="edit_mapping",
                     data_schema=self._mapping_channels_schema(

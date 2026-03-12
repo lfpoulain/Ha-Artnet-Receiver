@@ -22,6 +22,7 @@ from .const import (
     PROFILE_COLOR_TEMP,
     PROFILE_DIMMER,
     PROFILE_RGB,
+    PROFILE_RGB_COLOR_TEMP,
     PROFILE_RGBW,
     PROFILE_RGBWW,
     PROFILE_SWITCH,
@@ -47,6 +48,16 @@ BRIGHTNESS_COLOR_MODES = RGB_COLOR_MODES | {
     ColorMode.COLOR_TEMP,
     ColorMode.WHITE,
 }
+
+PROFILE_PREFERENCE_ORDER = (
+    PROFILE_RGBWW,
+    PROFILE_RGBW,
+    PROFILE_RGB_COLOR_TEMP,
+    PROFILE_RGB,
+    PROFILE_COLOR_TEMP,
+    PROFILE_DIMMER,
+    PROFILE_SWITCH,
+)
 
 
 def config_from_entry(entry: ConfigEntry) -> dict[str, Any]:
@@ -82,6 +93,11 @@ def supported_profiles_for_entity(hass: HomeAssistant, entity_id: str) -> list[s
         profiles.append(PROFILE_DIMMER)
     if supported_color_modes.intersection(RGB_COLOR_MODES):
         profiles.append(PROFILE_RGB)
+    if (
+        supported_color_modes.intersection(RGB_COLOR_MODES)
+        and ColorMode.COLOR_TEMP in supported_color_modes
+    ):
+        profiles.append(PROFILE_RGB_COLOR_TEMP)
     if supported_color_modes.intersection(RGBW_COLOR_MODES):
         profiles.append(PROFILE_RGBW)
     if supported_color_modes.intersection(RGBWW_COLOR_MODES):
@@ -89,6 +105,14 @@ def supported_profiles_for_entity(hass: HomeAssistant, entity_id: str) -> list[s
     if ColorMode.COLOR_TEMP in supported_color_modes:
         profiles.append(PROFILE_COLOR_TEMP)
     return profiles
+
+
+def preferred_profile_for_entity(hass: HomeAssistant, entity_id: str) -> str | None:
+    supported_profiles = set(supported_profiles_for_entity(hass, entity_id))
+    for profile in PROFILE_PREFERENCE_ORDER:
+        if profile in supported_profiles:
+            return profile
+    return None
 
 
 def build_mapping(user_input: dict[str, Any]) -> dict[str, Any]:
@@ -102,6 +126,12 @@ def build_mapping(user_input: dict[str, Any]) -> dict[str, Any]:
         mapping[CONF_RED_CHANNEL] = int(user_input[CONF_RED_CHANNEL])
         mapping[CONF_GREEN_CHANNEL] = int(user_input[CONF_GREEN_CHANNEL])
         mapping[CONF_BLUE_CHANNEL] = int(user_input[CONF_BLUE_CHANNEL])
+    elif profile == PROFILE_RGB_COLOR_TEMP:
+        mapping[CONF_CHANNEL] = int(user_input[CONF_CHANNEL])
+        mapping[CONF_RED_CHANNEL] = int(user_input[CONF_RED_CHANNEL])
+        mapping[CONF_GREEN_CHANNEL] = int(user_input[CONF_GREEN_CHANNEL])
+        mapping[CONF_BLUE_CHANNEL] = int(user_input[CONF_BLUE_CHANNEL])
+        mapping[CONF_COLOR_TEMP_CHANNEL] = int(user_input[CONF_COLOR_TEMP_CHANNEL])
     elif profile == PROFILE_RGBW:
         mapping[CONF_CHANNEL] = int(user_input[CONF_CHANNEL])
         mapping[CONF_RED_CHANNEL] = int(user_input[CONF_RED_CHANNEL])
@@ -130,6 +160,14 @@ def channels_for_mapping(mapping: dict[str, Any]) -> list[int]:
             int(mapping[CONF_RED_CHANNEL]),
             int(mapping[CONF_GREEN_CHANNEL]),
             int(mapping[CONF_BLUE_CHANNEL]),
+        ]
+    elif mapping[CONF_PROFILE] == PROFILE_RGB_COLOR_TEMP:
+        return [
+            int(mapping[CONF_CHANNEL]),
+            int(mapping[CONF_RED_CHANNEL]),
+            int(mapping[CONF_GREEN_CHANNEL]),
+            int(mapping[CONF_BLUE_CHANNEL]),
+            int(mapping[CONF_COLOR_TEMP_CHANNEL]),
         ]
     elif mapping[CONF_PROFILE] == PROFILE_RGBW:
         return [
@@ -174,6 +212,10 @@ def mapping_label(hass: HomeAssistant, mapping: dict[str, Any]) -> str:
     if mapping[CONF_PROFILE] == PROFILE_RGB:
         channel_summary = (
             f"DIM {mapping[CONF_CHANNEL]} / R{mapping[CONF_RED_CHANNEL]} / G{mapping[CONF_GREEN_CHANNEL]} / B{mapping[CONF_BLUE_CHANNEL]}"
+        )
+    elif mapping[CONF_PROFILE] == PROFILE_RGB_COLOR_TEMP:
+        channel_summary = (
+            f"DIM {mapping[CONF_CHANNEL]} / R{mapping[CONF_RED_CHANNEL]} / G{mapping[CONF_GREEN_CHANNEL]} / B{mapping[CONF_BLUE_CHANNEL]} / CT {mapping[CONF_COLOR_TEMP_CHANNEL]}"
         )
     elif mapping[CONF_PROFILE] == PROFILE_RGBW:
         channel_summary = (

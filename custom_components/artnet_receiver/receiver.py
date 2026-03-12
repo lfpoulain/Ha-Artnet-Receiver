@@ -37,6 +37,7 @@ from .const import (
     PROFILE_COLOR_TEMP,
     PROFILE_DIMMER,
     PROFILE_RGB,
+    PROFILE_RGB_COLOR_TEMP,
     PROFILE_RGBW,
     PROFILE_RGBWW,
     PROFILE_SWITCH,
@@ -282,6 +283,18 @@ class DmaixReceiver:
             if value is None or red is None or green is None or blue is None:
                 raise ValueError("RGB mappings require dimmer, red, green and blue values")
             values = (value, red, green, blue)
+        elif mapping.profile == PROFILE_RGB_COLOR_TEMP:
+            if (
+                value is None
+                or red is None
+                or green is None
+                or blue is None
+                or color_temp is None
+            ):
+                raise ValueError(
+                    "RGB + color temperature mappings require dimmer, red, green, blue and color temperature values"
+                )
+            values = (value, red, green, blue, color_temp)
         elif mapping.profile == PROFILE_RGBW:
             if value is None or red is None or green is None or blue is None or white is None:
                 raise ValueError("RGBW mappings require dimmer, red, green, blue and white values")
@@ -343,6 +356,19 @@ class DmaixReceiver:
                 service = SERVICE_TURN_ON
                 service_data[ATTR_BRIGHTNESS] = values[0]
                 service_data[ATTR_RGB_COLOR] = [values[1], values[2], values[3]]
+        elif mapping.profile == PROFILE_RGB_COLOR_TEMP:
+            if values[0] == 0:
+                service = SERVICE_TURN_OFF
+            else:
+                service = SERVICE_TURN_ON
+                service_data[ATTR_BRIGHTNESS] = values[0]
+                if any(channel > 0 for channel in values[1:4]):
+                    service_data[ATTR_RGB_COLOR] = [values[1], values[2], values[3]]
+                else:
+                    service_data["color_temp_kelvin"] = self._map_dmx_to_color_temp_kelvin(
+                        mapping.entity_id,
+                        values[4],
+                    )
         elif mapping.profile == PROFILE_RGBW:
             if values[0] == 0:
                 service = SERVICE_TURN_OFF
@@ -487,6 +513,14 @@ class DmaixReceiver:
                     int(raw_mapping[CONF_RED_CHANNEL]),
                     int(raw_mapping[CONF_GREEN_CHANNEL]),
                     int(raw_mapping[CONF_BLUE_CHANNEL]),
+                )
+            elif raw_mapping[CONF_PROFILE] == PROFILE_RGB_COLOR_TEMP:
+                channels = (
+                    int(raw_mapping[CONF_CHANNEL]),
+                    int(raw_mapping[CONF_RED_CHANNEL]),
+                    int(raw_mapping[CONF_GREEN_CHANNEL]),
+                    int(raw_mapping[CONF_BLUE_CHANNEL]),
+                    int(raw_mapping[CONF_COLOR_TEMP_CHANNEL]),
                 )
             elif raw_mapping[CONF_PROFILE] == PROFILE_RGBW:
                 channels = (
